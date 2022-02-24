@@ -1,3 +1,4 @@
+import random
 import numpy
 from moviepy.editor import *
 import glob
@@ -60,7 +61,7 @@ def crear_video(videos, outfile):
     #Aqui se acaba la mejor opcion
 
 
-def crear_video_imagenes(imagenes, audio, outfile):
+def crear_video_imagenes(imagenes, audio, outfile, chill=False):
     print("Creando clips de imagen")
     #Estaria guapo meterle a cada clip un texto encima con un id unico, asi si hay que escalar alguno o rotarlo es mas facil
     clips = []
@@ -69,18 +70,18 @@ def crear_video_imagenes(imagenes, audio, outfile):
     beat_times = get_beat_times(audio)
     # Obtener la duración media entre beats
     mean_dur = numpy.mean(numpy.gradient(beat_times))
+
+    if chill:
+      mean_dur *= 4
     
     for i, m in enumerate(imagenes):
       c = ImageClip(m)
-      w, h = c.size
-      if(w > h):
-        ratio = float(w)/float(h)
-      else:
-        ratio = float(h)/float(w)
 
       dur = 10 if i == len(imagenes) - 1 else beat_times[i+1] - beat_times[i]
-      
-      clips.append(c.resize( height=1080 ).set_duration(0.1))
+
+      dur = mean_dur if chill else dur
+
+      clips.append(c.resize( height=1080 ).set_duration(dur))
     
 
     #clips = [ImageClip(m).resize(0.5).set_duration(0.1) for m in imagenes] #Con las 20 primeras imagenes ya me va como una mierda y son 600 y pico
@@ -106,10 +107,13 @@ if __name__ == "__main__":
     noChill = glob.glob("./videos/noChill/*.*")
     
     chill = glob.glob("./videos/chill/*.*")
+    random.seed(0)
+    random.shuffle(noChill)
 
     videos = glob.glob("./videos/noChill/videos/*")
 
-    crear_video(videos, 'video_no_chill.mp4')
+    #crear_video(videos, 'video_no_chill.mp4')
 
-    crear_video_imagenes(chill, 'amanecer.wav', 'video_chill.mp4')
+    #crear_video_imagenes(chill, 'amanecer.wav', 'video_chill.mp4', True)
+    crear_video_imagenes(noChill, 'projectx.wav', 'video_no_chill_fotos.mp4')
     
